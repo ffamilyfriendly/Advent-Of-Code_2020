@@ -4,15 +4,13 @@
 
 using namespace std;
 
-int findPair() {
-    printf("Reading file\n");
+vector<int> getInputs() {
     vector<int> inputs;
     fstream file;
     file.open("input.txt",ios::in);
 
     if(!file || !file.is_open()) {
         printf("No input file!\n");
-        return 1;
     } else {
         string line;
         while(getline(file, line)) {
@@ -20,7 +18,12 @@ int findPair() {
         }
         file.close();
     }
+    return inputs;
+}
 
+int findPair() {
+    printf("Reading file\n");
+    vector<int> inputs = getInputs();
     printf("Read %d lines! Finding answer...\n",inputs.size());
 
     for(int i: inputs) {
@@ -36,21 +39,7 @@ int findPair() {
 
 int findTripple() {
     printf("Reading file\n");
-    vector<int> inputs;
-    fstream file;
-    file.open("input.txt",ios::in);
-
-    if(!file || !file.is_open()) {
-        printf("No input file!\n");
-        return 1;
-    } else {
-        string line;
-        while(getline(file, line)) {
-            inputs.push_back(atoi(line.c_str())); 
-        }
-        file.close();
-    }
-
+    vector<int> inputs = getInputs();
     printf("Read %d lines! Finding answer...\n",inputs.size());
 
     for(int i: inputs) {
@@ -72,6 +61,7 @@ int main(int argc, char** argv) {
         printf("No mode selected. find=pair|tripple. Defaults pair\n");
     }
     
+    //this is very ugly
     if(string(argv[1]) == string("find=tripple")) findPairMode = false;
 
     if(findPairMode) {
