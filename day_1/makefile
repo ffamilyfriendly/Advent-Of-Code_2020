@@ -1,2 +1,2 @@
 all:
-	g++ sum.cpp -o ./sum
+	g++ sum.cpp -o ./sum.exe
