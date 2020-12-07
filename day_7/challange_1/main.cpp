@@ -30,13 +30,15 @@ bag parseBag(string data) {
             el_contente.count = atoi(current.c_str()); //get number
             el_contente.bagType = current.substr(current.find(" ")+1); // remove number from string
 
+            if(el_contente.count == 1) el_contente.bagType += "s";
+
             b.canHold.push_back(el_contente); //push content
-            c->log("    [" + to_string(el_contente.count) + "] " + el_contente.bagType); //log content
+            //c->log("    [" + to_string(el_contente.count) + "] " + el_contente.bagType); //log content
 
             current = ""; //set current to ""
         }
      }
-
+    cout << endl;
     return b;
 }
 
@@ -47,14 +49,26 @@ int canHoldGold(string bag) {
 }
 
 //it's possible this function will crash computer
-int recurseFindBag(int curr, bag _bag) {
+bool recurseFindBag(bag _bag) {
+    bool found = false;
+    for(int i = 0; i < _bag.canHold.size(); i++) {
+        if(_bag.canHold[i].bagType == "shiny gold bags") {
+            cout << "found!" << endl;
+            found = true;
+        } else {
+            if(!found) found = recurseFindBag(bagList[_bag.canHold[i].bagType]);
+        }
+    }
 
+    return found;
 }
 
 //descriptor colour bags contain [<numberof descriptor colour bags> repeat separated with ","]
-//test... 186
+//this was kinda hard. Apparently 1 bags is called 1 bag instead. And here I was thinking the adventofcode author wasnt a sadist
+//tried: 13 (no), 21(no), 63 (no), 169 (yes!)
 int main(int argc,  char** argv) {
     fstream input;
+    //input.open("input.txt");
     input.open("input.txt");
 
     if(!input || !input.is_open()) {
@@ -70,12 +84,15 @@ int main(int argc,  char** argv) {
     }
 
     int goldBags = 0;
-    
 
-    //Now this can be solved with true recursion but I really cant be arsed so I'll assume max layers are like 5
     for(pair<string,bag> elem: bagList) {
-        goldBags += recurseFindBag(0, elem.second);
+
+        c->log("Running " + elem.first + ": ");
+        if(recurseFindBag(elem.second)) goldBags++;
+        c->log("\n");
+
     }
+
     input.close();
 
     c->log(to_string(goldBags));
