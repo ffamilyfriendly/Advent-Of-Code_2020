@@ -1,3 +1,7 @@
+// if you read this (unlikely) and you arent me (even more unlikely) please listen to harley poe, it's good!
+// https://open.spotify.com/track/4pbhZVYcPpKfksYzmLlvWf?si=MHnHFwsaTBGOVwdD_P6mTg
+// or https://www.youtube.com/watch?v=JqH0-UfCUy4
+
 #include "../../lib/header.h"
 #include <fstream>
 #include <map>
