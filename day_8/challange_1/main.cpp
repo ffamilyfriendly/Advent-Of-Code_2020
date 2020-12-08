@@ -4,6 +4,7 @@
 
 #include "../../lib/header.h"
 #include <fstream>
+#include <chrono>
 
 #define DEBUG false
 
@@ -21,6 +22,7 @@ console::Console *c = new console::Console();
 //note 18:39: nope, wasnt too bad. Time for part 2
 
 int main(int argc,  char** argv) {
+    auto t1 = chrono::high_resolution_clock::now();
     int accumulator = 0;
 
     fstream input; 
@@ -58,6 +60,11 @@ int main(int argc,  char** argv) {
         }
     }
 
-    c->log("accumulator is " + to_string(accumulator));
+    auto t2 = chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+
+
+    c->log("accumulator is " + to_string(accumulator) + " | execution took " + to_string(duration) + "ms");
     
 }

@@ -4,6 +4,7 @@
 
 #include "../../lib/header.h"
 #include <fstream>
+#include <chrono>
 
 #define DEBUG false
 
@@ -23,21 +24,22 @@ console::Console *c = new console::Console();
 */
 
 int getLoopValue(vector<instruction> stackInstance) {
-    int bound = 0;
     int thisAccumalator = 0;
+    int hasBeenRan[stackInstance.size()] = {0};
 
     for(int i = 0; i < stackInstance.size(); i++) {
-        bound++;
+        
+        if(hasBeenRan[i] > 2) {
+            thisAccumalator = 0;
+            break;
+        }
+
+        hasBeenRan[i]++;
+
         if(stackInstance[i].opcode == "acc") {
             thisAccumalator += stackInstance[i].argument; //perform mad mafs on accumulator
         } else if(stackInstance[i].opcode == "jmp") {
             i += stackInstance[i].argument-1; //move to stack index - 1 since for loop adds one every loop
-        }
-
-        if(stackInstance.size()*300 < bound) {
-            //c->log("upper bound hit. Exiting loop.");
-            thisAccumalator = 0;
-            break;
         }
     }
 
@@ -45,6 +47,7 @@ int getLoopValue(vector<instruction> stackInstance) {
 }
 
 int main(int argc,  char** argv) {
+    auto t1 = chrono::high_resolution_clock::now();
     int accumulator = 0;
 
     fstream input; 
@@ -68,28 +71,30 @@ int main(int argc,  char** argv) {
         stack.push_back(lineInstruction);
     }
 
-    c->log("Running stack with " + to_string(stack.size()) + " instructions!");
-
-    //This can be made wayyyy faster and more effective, but hey! It works
+    //Removed the clog. Function now runns at around 4ms which is acceptable I'd say
     for(int i = 0; i < stack.size(); i++) {
         int loopVal = 0;
 
-        vector<instruction> newStack = stack;
-        instruction thisInst = stack[i];
+        string oldInstruct = stack[i].opcode;
 
-        if(stack[i].opcode == "nop") thisInst.opcode = "jmp";
-        else if(stack[i].opcode == "jmp") thisInst.opcode = "nop";
+        if(stack[i].opcode == "nop") stack[i].opcode = "jmp";
+        else if(stack[i].opcode == "jmp") stack[i].opcode = "nop";
         else continue;
 
-        newStack[i] = thisInst;
-        loopVal = getLoopValue(newStack);
+
+        loopVal = getLoopValue(stack);
+
+        stack[i].opcode = oldInstruct;
 
         if(loopVal != 0) {
             accumulator = loopVal;
             break;
         }
     } 
+    auto t2 = chrono::high_resolution_clock::now();
 
-    c->log("accumulator is " + to_string(accumulator));
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+
+    c->log("accumulator is " + to_string(accumulator) + " | execution took " + to_string(duration) + "ms");
     
 }
