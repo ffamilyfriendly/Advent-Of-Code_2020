@@ -3,6 +3,8 @@
 
 #define debug false
 
+console::Console *c = new console::Console();
+
 vector<string> seats;
 
 int surrounding(char target, int x, int y, vector<string> rows) {
@@ -16,6 +18,8 @@ int surrounding(char target, int x, int y, vector<string> rows) {
 }
 
 int main(int argc,  char** argv) {
+
+    auto timer = c->timedLog("Solving!");
     
     fstream input;
 
@@ -58,11 +62,17 @@ int main(int argc,  char** argv) {
 
                 if(tempSeats[i][j] != deltaSeats[i][j]) thisLoopHasChanged = true;
             }
-        }
+        } 
+
         deltaSeats = tempSeats;
+
+        system("clear");
+        for(string row: deltaSeats) cout << row << endl;
+
         hasChanged = thisLoopHasChanged;
     } 
 
-    for(string row: deltaSeats) cout << row << endl;
+    timer.end();
+
     cout << availSeats << endl;
 }
