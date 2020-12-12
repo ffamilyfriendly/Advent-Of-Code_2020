@@ -2,47 +2,41 @@
 #include <fstream>
 #include <math.h>
 
+#define pi 3.141593f
+
 vector<pair<char,int>> instructions;
+
+struct Vector2 {
+    float x;
+    float y;
+    float degree;
+};
+
 struct ship {
-    //deltaEast 1 = facing east, -1 means facing west
-    int deltaEast = 1;
-    //delta north 1 means facing north, deltanorth -1 means facing south
-    int deltaNorth = 0;
-
+    Vector2 shipVector;
+    Vector2 shipPos;
     int currentlyFacing = 90;
-
-    int east = 0;
-    int north = 0;
-
-    void calcDegreeChange(int deltaDegree);
 };
 
-void ship::calcDegreeChange(int deltaDegree) {
-    this->deltaEast = 0;
-    this->deltaNorth = 0;
-    this->currentlyFacing = (this->currentlyFacing + deltaDegree) % 360;
+float addDegrees(int degree1, int degree2) {
+    return (degree1 + degree2) % 360;
+}
 
-    int thing = round((float)this->currentlyFacing/100);
-    switch(thing) {
-        case 0:
-            this->deltaNorth = 1;
-        break;
-        case 1:
-            this->deltaEast = 1;
-        break;
-        case 2:
-            this->deltaNorth = -1;
-        break;
-        case 3:
-            this->deltaEast = -1;
-        break;
-        default:
-            cout << "what? " << this->currentlyFacing << endl;
-            this->deltaNorth = 1;
-        break;
-    }
+Vector2 calcDegreeChange(int deltaDegree, int currentDegree = 0) {
+    float degree = addDegrees(currentDegree,deltaDegree);
+    Vector2 vec;
+
+    float radian = degree * (3.141593/180);
+
+    vec.y = cos(radian);
+    vec.x = sin(radian);
+    vec.degree = degree;
+
+    return vec;
 };
 
+
+//Tried 595 (too low)
 int main(int argc,  char** argv) {
     string mode = "";
     cout << "Mode? (debug/normal): ";
@@ -63,6 +57,8 @@ int main(int argc,  char** argv) {
         exit(EXIT_FAILURE);
     }
 
+    Vector2 testVector = calcDegreeChange(180,0);
+
     string line;
 
     while(getline(input,line)) {
@@ -70,31 +66,32 @@ int main(int argc,  char** argv) {
     }
 
     cout << "Succesfully read " << instructions.size() << " instructions! Calculating..." << endl;
+
     ship boat;
+    boat.shipVector = calcDegreeChange(0,boat.currentlyFacing);
 
     for(pair<char,int> i: instructions) {
         if(i.first == 'F') {
-            boat.east += (i.second * boat.deltaEast);
-            boat.north += (i.second * boat.deltaNorth);
+            boat.shipPos.x += i.second * boat.shipVector.x;
+            boat.shipPos.y += i.second * boat.shipVector.y;
         }
 
         if(i.first == 'N') {
-            boat.north += i.second;
+            boat.shipPos.y += i.second;
         } else if(i.first == 'E') {
-            boat.east += i.second;
+            boat.shipPos.x += i.second;
         } else if(i.first == 'S') {
-            boat.north -= i.second;
+            boat.shipPos.y -= i.second;
         } else if(i.first == 'W') {
-            boat.east -= i.second;
+            boat.shipPos.x -= i.second;
         }
 
         if(i.first == 'R') {
-            boat.calcDegreeChange(i.second);
+            boat.shipVector = calcDegreeChange(i.second, boat.currentlyFacing);
+            boat.currentlyFacing = addDegrees(boat.currentlyFacing, i.second);
         }
-
-        cout << "east " << boat.east << ", north " << boat.north << endl;
     }
-    int absN = abs( boat.north );
-    int absE = abs( boat.east );
+    int absN = abs( round(boat.shipPos.y) );
+    int absE = abs( round(boat.shipPos.x) );
     cout << "answer: " << absN + absE << " abs North: " << absN << " abs east: " << absE << endl;
 }
