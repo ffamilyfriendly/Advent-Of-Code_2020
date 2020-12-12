@@ -1,8 +1,9 @@
+// Hello! Music for today is Chet baker
+// https://www.youtube.com/watch?v=3zrSoHgAAWo
+
 #include "../../lib/header.h"
 #include <fstream>
 #include <math.h>
-
-#define pi 3.141593f
 
 vector<pair<char,int>> instructions;
 
