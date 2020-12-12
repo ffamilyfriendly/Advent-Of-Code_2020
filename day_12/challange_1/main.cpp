@@ -18,25 +18,25 @@ struct ship {
     int currentlyFacing = 90;
 };
 
-float addDegrees(int degree1, int degree2) {
+int addDegrees(int degree1, int degree2) {
     return (degree1 + degree2) % 360;
 }
 
 Vector2 calcDegreeChange(int deltaDegree, int currentDegree = 0) {
-    float degree = addDegrees(currentDegree,deltaDegree);
+    int degree = addDegrees(currentDegree,deltaDegree);
     Vector2 vec;
 
     float radian = degree * (3.141593/180);
 
-    vec.y = cos(radian);
-    vec.x = sin(radian);
+    vec.y = cosf(radian);
+    vec.x = sinf(radian);
     vec.degree = degree;
 
     return vec;
 };
 
 
-//Tried 595 (too low)
+//Tried 595 (too low), 600 also too low, 1133 (correct)
 int main(int argc,  char** argv) {
     string mode = "";
     cout << "Mode? (debug/normal): ";
@@ -56,9 +56,6 @@ int main(int argc,  char** argv) {
         perror("could not open file");
         exit(EXIT_FAILURE);
     }
-
-    Vector2 testVector = calcDegreeChange(180,0);
-
     string line;
 
     while(getline(input,line)) {
@@ -90,7 +87,13 @@ int main(int argc,  char** argv) {
             boat.shipVector = calcDegreeChange(i.second, boat.currentlyFacing);
             boat.currentlyFacing = addDegrees(boat.currentlyFacing, i.second);
         }
+
+        if(i.first == 'L') {
+            boat.shipVector = calcDegreeChange(i.second * -1, boat.currentlyFacing);
+            boat.currentlyFacing = addDegrees(boat.currentlyFacing, i.second * -1);
+        }
     }
+    cout << "x: " << boat.shipPos.x << " y: " << boat.shipPos.y << endl;
     int absN = abs( round(boat.shipPos.y) );
     int absE = abs( round(boat.shipPos.x) );
     cout << "answer: " << absN + absE << " abs North: " << absN << " abs east: " << absE << endl;
