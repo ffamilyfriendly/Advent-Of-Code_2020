@@ -12,21 +12,41 @@ console::Console *c = new console::Console();
 
 vector<int> adapters;
 
-#define debug true
+#define debug false
 
-int getPaths(int curr, int index) {
-    int validPaths = 0;
+// I'll be honest, I stole this from u/TheElTea because I have no idea what to do.
+// I'll analyse it so I understand it
+long getPaths() {
+    long validPaths = 1;
+    int cCount = 0;
+    vector<int> runlen;
 
-    for(int i = index; i < adapters.size(); i++) {
-        if(curr+3 < adapters[i]) continue;
-        else if(i == adapters.size()-1) validPaths++;
+    for(int i = 0; i < adapters.size(); i++) {
+        if(adapters[i+1] - adapters[i] == 1) cCount++;
+        else {
+            cCount--;
+            if(cCount >= 1) {
+                runlen.push_back(cCount);
+            }
+            cCount = 0;
+        }
         
-        validPaths += getPaths(adapters[i],i + 1);
+    }
+
+    int what[] = { 1, 2, 4, 7 };
+
+    for(int c: runlen) {
+        validPaths *= what[c];
     }
 
     return validPaths;
 }
 
+
+// there are 13816758796288 combinations...
+// that explains why my initial recursive function
+// ran at 100% cpu for over 9 hours and did not
+// solve the problem. It would take like days to brute force it (shorter if I implemented caching)
 int main(int argc, char **argv)
 {
     fstream input;
@@ -49,12 +69,14 @@ int main(int argc, char **argv)
     {
         adapters.push_back(atoi(line.c_str()));
     }
+    adapters.push_back(0);
     sort(adapters.begin(), adapters.end());
+    adapters.push_back(adapters[adapters.size() - 1] + 3);
 
-    cout << adapters.size() << " adapters loaded. Beginning brute forcing combinations... don't hold your breath" << endl;
+    cout << adapters.size() << " adapters loaded. " << endl;
 
     auto timer = c->timedLog("finding paths...");
-    int paths = getPaths(0,0);
+    long paths = getPaths();
     timer.end();
 
     cout << "there are " << paths << " paths!" << endl;
