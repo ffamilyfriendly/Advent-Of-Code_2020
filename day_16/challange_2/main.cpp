@@ -1,14 +1,15 @@
 #include "../../lib/header.h"
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
 #include <math.h>
 
-vector<pair<int,int>> ranges;
+//haha this is dumb
+vector<pair<pair<int,int>,pair<int,int>>> ranges;
+unordered_map<int, vector<int>> map;
 
-fstream dbug;
-
-vector<pair<int,int>> getRanges(string data) {
-    vector<pair<int,int>> out;
+pair<pair<int,int>,pair<int,int>> getRanges(string data) {
+    pair<pair<int,int>,pair<int,int>> out;
 
     size_t col = data.find(":");
     size_t divider = data.find(" or ");
@@ -25,8 +26,8 @@ vector<pair<int,int>> getRanges(string data) {
     int r2v1 = atoi( range2.substr(0,r2Div).c_str() );
     int r2v2 = atoi( range2.substr(r2Div+1).c_str() );
 
-    out.push_back( { min(r1v1,r1v2), max(r1v1,r1v2) } );
-    out.push_back( { min(r2v1,r2v2), max(r2v1,r2v2) } );
+    out.first = { min(r1v1,r1v2), max(r1v1,r1v2) };
+    out.second = { min(r2v1,r2v2), max(r2v1,r2v2) };
 
     return out;
 }
@@ -43,36 +44,49 @@ vector<int> csv(string data) {
     return out;
 }
 
-bool rangeContians(int num, bool log) {
-    if(log) dbug << num << ": ";
+bool rangeContians(int num, pair<pair<int,int>,pair<int,int>> range) {
 
-    for(pair<int,int> r: ranges) {
-        if(r.first <= num && r.second >= num) {
-            if(log) dbug << "Mathes range " << r.first << "-" << r.second << endl;
+    if(range.first.first <= num && range.first.second >= num) {
+        return true;
+    }
 
-            return true;
-        }
+    if(range.second.first <= num && range.second.second >= num) {
+        return true;
     }
 
     return false;
 }
 
-int isValid(vector<int> ticket, bool log) {
-    int valid = 0;
-    for(int i: ticket){
-        if(!rangeContians(i,log)) {valid += i; break;}
+unordered_map<int,int> handleMerge(unordered_map<int,vector<int>> canBe, int rSize) {
+    unordered_map<int,int> out;
+
+    for(int i = 0; i < rSize; i++) {
+        if(canBe[i].size() == 1) {
+            out[canBe[i][0]] = i;
+
+            for(int j = 0; j < rSize; j++) {
+                for(int k = 0; k < canBe[j].size(); k++) {
+                    if(canBe[j][k] == canBe[i][0]) canBe[j].erase(canBe[j].begin() + k);
+                }
+            }
+
+            i = 0;
+        }
     }
 
-    return valid;
+    return out;
 }
 
-// tried 29638 (too low), 175876 too high
+// This took me wayyyyy to long to figure out.
+// reason why is that i removed all rules that I thought
+// wasnt going to be used anymore. That was a mistake.
+// changing that gave me the correct answer
 int main(int argc,  char** argv) {
     fstream input;
 
     // check if there are enough parameters
     if(argc <= 1) 
-        argv[1] = (char*)"input.txt";
+        argv[1] = (char*)"revamped.txt";
 
     // set debug mode based on second parameter
     bool dMode = argv[2] == "debug";
@@ -90,13 +104,14 @@ int main(int argc,  char** argv) {
     //read the file
     string line;
     int mode = 0;
-    int res = 0;
-
-    dbug.open("log.txt", ios::out);
+    int amountOfItems = 0;
+    bool nextIsYours = false;
+    vector<int> yourTicket;
 
     while(getline(input,line)) {
         if(line.empty()) continue;
-        if(line == "your ticket:") {mode = 1; continue;}
+        if(line[0] == '#') continue;
+        if(line == "your ticket:") {nextIsYours = true; mode = 2; continue;}
         else if(line == "nearby tickets:") {mode = 2; continue;}
 
         switch (mode)
@@ -104,20 +119,46 @@ int main(int argc,  char** argv) {
             case 0: 
             {
                 auto newVector = getRanges(line);
-                ranges.insert(ranges.end(), newVector.begin(), newVector.end());
-                dbug << "range: " << newVector[0].first << "-" << newVector[0].second << " " << newVector[1].first << "-" << newVector[1].second << endl;
+                ranges.push_back(newVector);
             }
             break;
-            case 1:
-                //res += isValid(csv(line));
-                continue;
-            break;
             case 2:
-                res += isValid(csv(line),true);
-                dbug << "+ " << isValid(csv(line),false) << endl << endl << endl;
-            break;
+                vector<int> parsed = csv(line);
+
+                if(nextIsYours) {
+                    yourTicket = parsed;
+                    nextIsYours = false;
+                }
+
+                amountOfItems++;
+                for(int i = 0; i < parsed.size(); i++)
+                    for(int j = 0; j < ranges.size(); j++) 
+                        if(rangeContians(parsed[i],ranges[j])) map[j].push_back(i);
         }
     }
-    
-    cout << res << " valid tickets!" << endl;
+
+    unordered_map<int,vector<int>> canBe;
+
+    for(int i = 0; i < ranges.size(); i++) {
+
+        int nrOfNr[200] = {0};
+        for(int j = 0; j < map[i].size(); j++) {
+            nrOfNr[map[i][j]]++;
+
+            if(nrOfNr[map[i][j]] == amountOfItems) {
+                canBe[map[i][j]].push_back(i);
+            }
+        }
+    }
+
+    long long res = 1;
+    unordered_map<int,int> asdasdasd = handleMerge(canBe,amountOfItems);
+    for(int i = 0; i < 6; i++) {
+        cout << i << ":" << asdasdasd[i] << endl;
+        res *= yourTicket[asdasdasd[i]];
+    }    
+
+    cout << endl;
+
+    cout << res << " res!" << endl;
 }
