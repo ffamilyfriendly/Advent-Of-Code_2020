@@ -5,8 +5,6 @@
 
 vector<pair<int,int>> ranges;
 
-fstream dbug;
-
 vector<pair<int,int>> getRanges(string data) {
     vector<pair<int,int>> out;
 
@@ -44,11 +42,10 @@ vector<int> csv(string data) {
 }
 
 bool rangeContians(int num, bool log) {
-    if(log) dbug << num << ": ";
+
 
     for(pair<int,int> r: ranges) {
         if(r.first <= num && r.second >= num) {
-            if(log) dbug << "Mathes range " << r.first << "-" << r.second << endl;
 
             return true;
         }
@@ -92,8 +89,6 @@ int main(int argc,  char** argv) {
     int mode = 0;
     int res = 0;
 
-    dbug.open("log.txt", ios::out);
-
     while(getline(input,line)) {
         if(line.empty()) continue;
         if(line == "your ticket:") {mode = 1; continue;}
@@ -105,7 +100,6 @@ int main(int argc,  char** argv) {
             {
                 auto newVector = getRanges(line);
                 ranges.insert(ranges.end(), newVector.begin(), newVector.end());
-                dbug << "range: " << newVector[0].first << "-" << newVector[0].second << " " << newVector[1].first << "-" << newVector[1].second << endl;
             }
             break;
             case 1:
@@ -113,8 +107,7 @@ int main(int argc,  char** argv) {
                 continue;
             break;
             case 2:
-                res += isValid(csv(line),true);
-                dbug << "+ " << isValid(csv(line),false) << endl << endl << endl;
+                res += isValid(csv(line),false);
             break;
         }
     }
